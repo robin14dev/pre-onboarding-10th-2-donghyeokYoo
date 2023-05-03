@@ -1,0 +1,38 @@
+.wrapper {
+  border-radius: 42px;
+  border: 2px solid;
+  border-color: #FFFFFF;
+  background-color: #FFFFFF;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  font-size: 1rem;
+  font-weight: 400;
+  letter-spacing: -0.018em;
+  line-height: 1.6;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  width: 490px;
+  
+  position: relative;
+  padding-right: 8px;  
+  margin-top: 11rem;   
+}
+
+.placeholder {
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  width: 100%;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+}
