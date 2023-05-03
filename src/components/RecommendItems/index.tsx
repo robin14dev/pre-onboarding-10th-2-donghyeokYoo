@@ -3,7 +3,8 @@ import styles from './style.module.scss';
 import RecommendItem from '../RecommendItem';
 
 type RecommendItemsProps = {
-  query: string;
+  recommendItems: RecommendItem[] | null;
+  isQuerying: boolean;
 };
 
 const dummyData = [
@@ -41,14 +42,21 @@ const dummyData = [
   },
 ];
 
-export default function RecommendItems({ query }: RecommendItemsProps) {
-  const [items, setItems] = useState(dummyData);
+export default function RecommendItems({ recommendItems, isQuerying }: RecommendItemsProps) {
+  const [items, setItems] = useState(recommendItems);
+  if (items !== recommendItems) {
+    setItems(recommendItems);
+  }
   return (
     <div className={styles.wrapper}>
-      <div className={styles.title}>추천 검색어</div>
-      {items.map(item => (
-        <RecommendItem key={item.id} name={item.name} />
-      ))}
+      {!isQuerying ? (
+        <div>검색어 없음</div>
+      ) : (
+        <>
+          <div className={styles.title}>추천 검색어</div>
+          {items && items.map(item => <RecommendItem key={item.id} name={item.name} />)}
+        </>
+      )}
     </div>
   );
 }

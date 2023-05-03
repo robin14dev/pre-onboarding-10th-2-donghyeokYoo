@@ -1,10 +1,70 @@
 import { useState } from 'react';
+import axios from 'axios';
 import styles from './styles.module.scss';
+import { RecommendItemsStorageKey } from '../../constants/config';
+import {
+  parseItemsFromLocalstorage,
+  saveItemsOnLocalStorage,
+  getItemsFromLocalstorage,
+} from '../../utils/parsingFromLocalstorage';
 import RecommendItems from '../RecommendItems';
 
 export default function SearchBar() {
-  const [query, setQuery] = useState('');
-  const [openRecommendItems, setOpenRecommendItems] = useState(true);
+  const [isQuerying, setIsQuerying] = useState(false);
+  const [openRecommendItems, setOpenRecommendItems] = useState(false);
+  const [recommendItems, setRecommentItems] = useState<RecommendItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const getItemsFromAPI = async (query: string) => {
+    try {
+      setIsLoading(true);
+      const itemsRes = await axios({
+        method: 'get',
+        url: `api/v1/search-conditions/?name=${query}`,
+      });
+
+      return itemsRes.data.length > 0 ? itemsRes.data : null;
+    } catch (error) {
+      console.log(error);
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getRecommendItems = async (query: string, key: string) => {
+    const parsedItems = parseItemsFromLocalstorage(RecommendItemsStorageKey);
+    if (parsedItems) {
+      const localStorageRes: RecommendItem[] | null = getItemsFromLocalstorage(query, parsedItems);
+      if (localStorageRes) {
+        return setRecommentItems(localStorageRes);
+      }
+    }
+
+    const apiRes: RecommendItem[] | null = await getItemsFromAPI(query);
+
+    if (apiRes) {
+      setRecommentItems(apiRes);
+      saveItemsOnLocalStorage(query, apiRes, RecommendItemsStorageKey);
+    }
+  };
+
+  const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    if (!query) {
+      setIsQuerying(false);
+      return;
+    }
+
+    if (!openRecommendItems) {
+      setOpenRecommendItems(true);
+    }
+    if (!isQuerying) {
+      setIsQuerying(true);
+    }
+    getRecommendItems(query, RecommendItemsStorageKey);
+  };
+
   return (
     <div className={styles.wrapper}>
       <div className="css-yfr80j">
@@ -32,6 +92,7 @@ export default function SearchBar() {
                 </div>
               </div>
               <input
+                onChange={onChangeHandler}
                 id="search_bar_main"
                 type="search"
                 spellCheck="false"
@@ -55,7 +116,9 @@ export default function SearchBar() {
           </svg>
         </div>
       </button>
-      {openRecommendItems && <RecommendItems query={query} />}
+      {openRecommendItems && (
+        <RecommendItems isQuerying={isQuerying} recommendItems={recommendItems} />
+      )}
     </div>
   );
 }
