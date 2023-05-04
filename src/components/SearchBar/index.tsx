@@ -1,70 +1,29 @@
-import { useState } from 'react';
-import axios from 'axios';
+import { useEffect, useState } from 'react';
 import styles from './styles.module.scss';
 import { ReactComponent as SearchIcon } from '../../assets/finder.svg';
 import { RecommendItemsStorageKey } from '../../constants/config';
+import useDebounce from '../../hooks/useDebounce';
+import { getItemsFromAPI } from '../../services/recommendQuery';
 import {
   parseItemsFromLocalstorage,
   saveItemsOnLocalStorage,
   getItemsFromLocalstorage,
-} from '../../utils/parsingFromLocalstorage';
+} from '../../utils/dataFromLocalstorage';
 import RecommendItems from '../RecommendItems';
 
 export default function SearchBar() {
-  const [isQuerying, setIsQuerying] = useState(false);
   const [openRecommendItems, setOpenRecommendItems] = useState(false);
   const [recommendItems, setRecommentItems] = useState<RecommendItem[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [currentIdx, setCurrentIdx] = useState(0);
-
-  const getItemsFromAPI = async (query: string) => {
-    try {
-      setIsLoading(true);
-      const itemsRes = await axios({
-        method: 'get',
-        url: `api/v1/search-conditions/?name=${query}`,
-      });
-
-      return itemsRes.data.length > 0 ? itemsRes.data : null;
-    } catch (error) {
-      console.log(error);
-      return null;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const getRecommendItems = async (query: string, key: string) => {
-    const parsedItems = parseItemsFromLocalstorage(RecommendItemsStorageKey);
-    if (parsedItems) {
-      const localStorageRes: RecommendItem[] | null = getItemsFromLocalstorage(query, parsedItems);
-      if (localStorageRes) {
-        return setRecommentItems(localStorageRes);
-      }
-    }
-
-    const apiRes: RecommendItem[] | null = await getItemsFromAPI(query);
-
-    if (apiRes) {
-      setRecommentItems(apiRes);
-      saveItemsOnLocalStorage(query, apiRes, RecommendItemsStorageKey);
-    }
-  };
+  const [query, setQuery] = useState('');
+  const debouncedQuery = useDebounce(query);
 
   const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value;
-    if (!query) {
-      setIsQuerying(false);
-      return;
-    }
-
     if (!openRecommendItems) {
       setOpenRecommendItems(true);
     }
-    if (!isQuerying) {
-      setIsQuerying(true);
-    }
-    getRecommendItems(query, RecommendItemsStorageKey);
+
+    setQuery(e.target.value);
   };
 
   const onKeyDownHandler = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -74,6 +33,30 @@ export default function SearchBar() {
       setCurrentIdx(prevIdx => prevIdx - 1);
     }
   };
+
+  useEffect(() => {
+    const getRecommendItems = async (value: string, key: string) => {
+      const parsedItems = parseItemsFromLocalstorage(key);
+      if (parsedItems) {
+        const localStorageRes: RecommendItem[] | null = getItemsFromLocalstorage(
+          value,
+          parsedItems,
+        );
+        if (localStorageRes) {
+          return setRecommentItems(localStorageRes);
+        }
+      }
+
+      const apiRes: RecommendItem[] | null = await getItemsFromAPI(value);
+
+      if (apiRes) {
+        setRecommentItems(apiRes);
+        saveItemsOnLocalStorage(value, apiRes, RecommendItemsStorageKey);
+      }
+    };
+    if (!debouncedQuery) return;
+    getRecommendItems(debouncedQuery, RecommendItemsStorageKey);
+  }, [debouncedQuery]);
 
   return (
     <div className={styles.wrapper}>
@@ -115,7 +98,7 @@ export default function SearchBar() {
       </button>
       {openRecommendItems && (
         <RecommendItems
-          isQuerying={isQuerying}
+          isQuerying={!!query.length}
           recommendItems={recommendItems}
           currentIdx={currentIdx}
         />

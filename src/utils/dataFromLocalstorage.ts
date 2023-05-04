@@ -11,8 +11,6 @@ export const saveItemsOnLocalStorage = (
   items: RecommendItem[],
   storageKey: string,
 ) => {
-  console.log('save', query, items);
-
   const parsedItems = parseItemsFromLocalstorage(storageKey);
   if (!parsedItems) {
     localStorage.setItem(storageKey, JSON.stringify({ [query]: items }));
