@@ -2,6 +2,7 @@ import axios from 'axios';
 
 export const getItemsFromAPI = async (value: string) => {
   try {
+    console.info('calling api');
     const itemsRes = await axios({
       method: 'get',
       url: `api/v1/search-conditions/?name=${value}`,
