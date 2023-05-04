@@ -71,12 +71,14 @@ export default function SearchBar() {
           <div className="css-12m9wyz">
             <div className={styles.placeholder}>
               <div className="css-ubpq07">
-                <div className="css-orqhza">
-                  <div className="css-daf4fh">
-                    <SearchIcon />
+                {query.length === 0 && (
+                  <div className="css-orqhza">
+                    <div className="css-daf4fh">
+                      <SearchIcon />
+                    </div>
+                    <div className="css-umr6cd">질환명을 입력해 주세요.</div>
                   </div>
-                  <div className="css-umr6cd">질환명을 입력해 주세요.</div>
-                </div>
+                )}
               </div>
               <input
                 onKeyDown={onKeyDownHandler}
