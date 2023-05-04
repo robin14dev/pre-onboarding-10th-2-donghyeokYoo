@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 import styles from './styles.module.scss';
+import { ReactComponent as SearchIcon } from '../../assets/finder.svg';
 import { RecommendItemsStorageKey } from '../../constants/config';
 import {
   parseItemsFromLocalstorage,
@@ -14,6 +15,7 @@ export default function SearchBar() {
   const [openRecommendItems, setOpenRecommendItems] = useState(false);
   const [recommendItems, setRecommentItems] = useState<RecommendItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [currentIdx, setCurrentIdx] = useState(0);
 
   const getItemsFromAPI = async (query: string) => {
     try {
@@ -65,6 +67,14 @@ export default function SearchBar() {
     getRecommendItems(query, RecommendItemsStorageKey);
   };
 
+  const onKeyDownHandler = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'ArrowDown') {
+      setCurrentIdx(prevIdx => prevIdx + 1);
+    } else if (e.key === 'ArrowUp') {
+      setCurrentIdx(prevIdx => prevIdx - 1);
+    }
+  };
+
   return (
     <div className={styles.wrapper}>
       <div className="css-yfr80j">
@@ -79,19 +89,13 @@ export default function SearchBar() {
               <div className="css-ubpq07">
                 <div className="css-orqhza">
                   <div className="css-daf4fh">
-                    <svg
-                      viewBox="0 0 16 16"
-                      fill="currentColor"
-                      preserveAspectRatio="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path d="M6.56 0a6.56 6.56 0 015.255 10.49L16 14.674 14.675 16l-4.186-4.184A6.56 6.56 0 116.561 0zm0 1.875a4.686 4.686 0 100 9.372 4.686 4.686 0 000-9.372z" />
-                    </svg>
+                    <SearchIcon />
                   </div>
                   <div className="css-umr6cd">질환명을 입력해 주세요.</div>
                 </div>
               </div>
               <input
+                onKeyDown={onKeyDownHandler}
                 onChange={onChangeHandler}
                 id="search_bar_main"
                 type="search"
@@ -106,18 +110,15 @@ export default function SearchBar() {
       <button className="css-j7n9fz" type="button">
         <div className="css-zag2sr">검색버튼</div>
         <div className="css-1i55lp4">
-          <svg
-            viewBox="0 0 16 16"
-            fill="currentColor"
-            preserveAspectRatio="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path d="M6.56 0a6.56 6.56 0 015.255 10.49L16 14.674 14.675 16l-4.186-4.184A6.56 6.56 0 116.561 0zm0 1.875a4.686 4.686 0 100 9.372 4.686 4.686 0 000-9.372z" />
-          </svg>
+          <SearchIcon />
         </div>
       </button>
       {openRecommendItems && (
-        <RecommendItems isQuerying={isQuerying} recommendItems={recommendItems} />
+        <RecommendItems
+          isQuerying={isQuerying}
+          recommendItems={recommendItems}
+          currentIdx={currentIdx}
+        />
       )}
     </div>
   );
