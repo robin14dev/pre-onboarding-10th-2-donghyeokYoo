@@ -27,10 +27,11 @@ export default function SearchBar() {
   };
 
   const onKeyDownHandler = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const maxLength = recommendItems.slice(0, 10).length;
     if (e.key === 'ArrowDown') {
-      setCurrentIdx(prevIdx => prevIdx + 1);
+      setCurrentIdx(prevIdx => (prevIdx === maxLength - 1 ? maxLength - 1 : prevIdx + 1));
     } else if (e.key === 'ArrowUp') {
-      setCurrentIdx(prevIdx => prevIdx - 1);
+      setCurrentIdx(prevIdx => (prevIdx === 0 ? 0 : prevIdx - 1));
     }
   };
 
